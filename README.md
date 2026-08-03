@@ -25,6 +25,8 @@ My other skills:
 
 **Skill:** [cwe-code-review/SKILL.md](https://github.com/ivan-sincek/secure-code-review-agent-skills/blob/main/markdown/cwe-code-review/SKILL.md)
 
+**Example:** [stride-threat-modeling-framework/examples/stride_threat_model.md](https://github.com/ivan-sincek/secure-code-review-agent-skills/blob/main/markdown/cwe-code-review/examples/cwe_code_review.md)
+
 ## How to Use
 
 * Copy the contents of the [markdown](https://github.com/ivan-sincek/secure-code-review-agent-skills/tree/main/markdown) directory into your project's `.claude/skills/` directory.
