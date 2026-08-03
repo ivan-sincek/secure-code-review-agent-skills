@@ -137,7 +137,7 @@ Quality assurance:
 | **OWASP** | OWASP Top Ten identifiers associated with the weakness in the format `X##:YYYY - Name`. |
 | **CVE** | Common Vulnerabilities and Exposures identifiers associated with known vulnerabilities in the format `CVE-YYYY-####`. |
 | **Confidence** | Confidence rating indicating the strength of the source code evidence supporting the weakness. Use one of the following: `Highest`, `High`, `Medium`, `Low`. |
-| **Locations** | All source code locations where the weakness occurs in the format `path/to/file:#-#`. |
+| **Locations** | All source code locations where the weakness occurs in the format `path/to/file:#[-#]`. |
 
 #### Step 2.1 - Evidence
 

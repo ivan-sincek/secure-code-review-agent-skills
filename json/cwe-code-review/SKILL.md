@@ -137,7 +137,7 @@ Quality assurance:
   "owasp": ["OWASP Top Ten identifiers associated with the weakness in the format `X##:YYYY - Name`."],
   "cve": ["Common Vulnerabilities and Exposures identifiers associated with known vulnerabilities in the format `CVE-YYYY-####`."],
   "confidence": "Confidence rating indicating the strength of the source code evidence supporting the weakness. Use one of the following: `Highest`, `High`, `Medium`, `Low`.",
-  "locations": ["All source code locations where the weakness occurs in the format `path/to/file:#-#`."],
+  "locations": ["All source code locations where the weakness occurs in the format `path/to/file:#[-#]`."],
   "evidence": "A single minimal verbatim source code excerpt demonstrating the weakness enclosed in a fenced code block with the correct language identifier. For each vulnerable line, append the inline comment `VULNERABLE`."
 }
 ```

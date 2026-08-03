@@ -53,11 +53,11 @@
       ],
       "confidence": "Highest",
       "locations": [
-        "vulnerabilities/sqli/source/low.php:5-11",
-        "vulnerabilities/sqli_blind/source/low.php",
-        "login.php:37-38"
+        "vulnerabilities/sqli/source/low.php:10",
+        "vulnerabilities/sqli_blind/source/low.php:11",
+        "login.php:39"
       ],
-      "evidence": "```php\n$id = $_REQUEST[ 'id' ]; // VULNERABLE\n// ...\n$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\"; // VULNERABLE\n$result = mysqli_query( $GLOBALS[\"___mysqli_ston\"],  $query );\n```"
+      "evidence": "```php\n$id = $_REQUEST[ 'id' ];\n// ...\n$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\"; // VULNERABLE\n$result = mysqli_query( $GLOBALS[\"___mysqli_ston\"],  $query );\n```"
     },
     {
       "id": "WEAKNESS-2",
@@ -107,9 +107,10 @@
       ],
       "confidence": "Highest",
       "locations": [
-        "vulnerabilities/exec/source/low.php:5-18"
+        "vulnerabilities/exec/source/low.php:10",
+        "vulnerabilities/exec/source/low.php:14"
       ],
-      "evidence": "```php\n$target = $_REQUEST[ 'ip' ]; // VULNERABLE\n// ...\nif( stristr( php_uname( 's' ), 'Windows NT' ) ) {\n    $cmd = shell_exec( 'ping  ' . $target ); // VULNERABLE\n}\nelse {\n    $cmd = shell_exec( 'ping  -c 4 ' . $target ); // VULNERABLE\n}\n$html .= \"<pre>{$cmd}</pre>\";\n```"
+      "evidence": "```php\n$target = $_REQUEST[ 'ip' ];\n// ...\nif( stristr( php_uname( 's' ), 'Windows NT' ) ) {\n    $cmd = shell_exec( 'ping  ' . $target ); // VULNERABLE\n}\nelse {\n    $cmd = shell_exec( 'ping  -c 4 ' . $target ); // VULNERABLE\n}\n```"
     }
   ],
   "weakness_summary": [

@@ -28,12 +28,12 @@
 | **OWASP** | A03:2021 - Injection |
 | **CVE** | N/A |
 | **Confidence** | Highest |
-| **Locations** | vulnerabilities/sqli/source/low.php:5-11<br>vulnerabilities/sqli_blind/source/low.php<br>login.php:37-38 |
+| **Locations** | vulnerabilities/sqli/source/low.php:10<br>vulnerabilities/sqli_blind/source/low.php:11<br>login.php:39 |
 
 #### Evidence
 
 ```php
-$id = $_REQUEST[ 'id' ]; // VULNERABLE
+$id = $_REQUEST[ 'id' ];
 // ...
 $query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';"; // VULNERABLE
 $result = mysqli_query( $GLOBALS["___mysqli_ston"],  $query );
@@ -58,12 +58,12 @@ $result = mysqli_query( $GLOBALS["___mysqli_ston"],  $query );
 | **OWASP** | A03:2021 - Injection |
 | **CVE** | N/A |
 | **Confidence** | Highest |
-| **Locations** | vulnerabilities/exec/source/low.php:5-17 |
+| **Locations** | vulnerabilities/exec/source/low.php:10<br>vulnerabilities/exec/source/low.php:14 |
 
 #### Evidence
 
 ```php
-$target = $_REQUEST[ 'ip' ]; // VULNERABLE
+$target = $_REQUEST[ 'ip' ];
 // ...
 if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
     $cmd = shell_exec( 'ping  ' . $target ); // VULNERABLE
@@ -71,7 +71,6 @@ if( stristr( php_uname( 's' ), 'Windows NT' ) ) {
 else {
     $cmd = shell_exec( 'ping  -c 4 ' . $target ); // VULNERABLE
 }
-$html .= \"<pre>{$cmd}</pre>\";
 ```
 
 ## Weakness Summary
