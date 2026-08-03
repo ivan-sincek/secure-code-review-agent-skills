@@ -1,0 +1,135 @@
+{
+  "cwe_code_review": {
+    "project_name": "Damn Vulnerable Web Application (DVWA)",
+    "created_by": "Claude Opus 4.6 (GitHub Copilot)",
+    "created_on": "2026-05-31",
+    "created_with": "CWE Code Review v1.1"
+  },
+  "weakness_details": [
+    {
+      "id": "WEAKNESS-1",
+      "name": "SQL Injection in `/vulnerabilities/sqli/`",
+      "severity": "Critical",
+      "cvss": "8.7 CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+      "likelihood": "Very Likely",
+      "summary": "User-controlled `id` parameter in `vulnerabilities/sqli/source/low.php` allows SQL injection due to direct string interpolation in SQL queries without prepared statements, resulting in full database compromise including credential extraction and data manipulation.",
+      "categories": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "attack_scenario": [
+        "1. Attacker authenticates to DVWA with any valid user account.",
+        "2. Attacker navigates to `/vulnerabilities/sqli/` and submits a crafted payload such as `1' UNION SELECT user, password FROM users-- -` in the `id` parameter.",
+        "3. The value of `$_REQUEST['id']` is assigned to `$id` in `vulnerabilities/sqli/source/low.php` without any input validation.",
+        "4. The application interpolates the payload directly into the SQL query `SELECT first_name, last_name FROM users WHERE user_id = '$id'`.",
+        "5. The database engine executes the injected UNION SELECT statement alongside the original query.",
+        "6. The application returns all usernames and MD5 password hashes from the `users` table in the HTTP response.",
+        "7. Attacker cracks the MD5 hashes offline using rainbow tables to obtain plaintext credentials for all accounts."
+      ],
+      "existing_controls": [
+        "Authentication required to access vulnerability modules.",
+        "At `medium` level, `mysqli_real_escape_string()` is applied to input.",
+        "At `impossible` level, PDO prepared statements with bound parameters are used."
+      ],
+      "residual_severity": "Critical",
+      "mitigations": [
+        "Use parameterized queries (prepared statements) with bound parameters for all database interactions.",
+        "Implement least-privilege database accounts that cannot access `information_schema` or perform administrative operations.",
+        "Deploy a Web Application Firewall (WAF) with SQL injection detection rules.",
+        "Remove verbose database error messages from HTTP responses."
+      ],
+      "capec": [
+        "CAPEC-66"
+      ],
+      "cwe": [
+        "CWE-89"
+      ],
+      "owasp": [
+        "A03:2021 - Injection"
+      ],
+      "cve": [
+        "N/A"
+      ],
+      "confidence": "Highest",
+      "locations": [
+        "vulnerabilities/sqli/source/low.php:5-11",
+        "vulnerabilities/sqli_blind/source/low.php",
+        "login.php:37-38"
+      ],
+      "evidence": "```php\n$id = $_REQUEST[ 'id' ]; // VULNERABLE\n// ...\n$query  = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\"; // VULNERABLE\n$result = mysqli_query( $GLOBALS[\"___mysqli_ston\"],  $query );\n```"
+    },
+    {
+      "id": "WEAKNESS-2",
+      "name": "OS Command Injection in `/vulnerabilities/exec/`",
+      "severity": "Critical",
+      "cvss": "8.7 CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+      "likelihood": "Very Likely",
+      "summary": "User-controlled `ip` parameter in `vulnerabilities/exec/source/low.php` allows OS command injection due to direct string concatenation into `shell_exec()` without input validation, resulting in arbitrary command execution on the underlying server.",
+      "categories": [
+        "Tampering",
+        "Information Disclosure",
+        "Elevation of Privilege"
+      ],
+      "attack_scenario": [
+        "1. Attacker authenticates to DVWA with any valid user account.",
+        "2. Attacker navigates to `/vulnerabilities/exec/` and submits a crafted payload such as `127.0.0.1; cat /etc/passwd` in the `ip` parameter.",
+        "3. The value of `$_REQUEST['ip']` is assigned to `$target` in `vulnerabilities/exec/source/low.php` without any input validation.",
+        "4. The application concatenates the payload directly into the `shell_exec('ping -c 4 ' . $target)` call.",
+        "5. The operating system interprets the semicolon as a command separator and executes `cat /etc/passwd` after the ping command.",
+        "6. The output of both commands is returned in the HTTP response.",
+        "7. Attacker executes reverse shell command to obtain persistent interactive access to the server."
+      ],
+      "existing_controls": [
+        "Authentication required to access vulnerability modules.",
+        "At `medium` level, `&&` and `;` characters are removed from input.",
+        "At `impossible` level, strict IP address validation using numeric checks is enforced."
+      ],
+      "residual_severity": "Critical",
+      "mitigations": [
+        "Replace `shell_exec()` with language-native libraries for network operations (e.g., PHP `socket` functions).",
+        "Apply `escapeshellarg()` or `escapeshellcmd()` to all user-supplied values passed to system commands.",
+        "Implement strict allowlist input validation accepting only valid IPv4/IPv6 addresses.",
+        "Apply principle of least privilege to the web server process user.",
+        "Deploy a Web Application Firewall (WAF) with OS command injection detection rules."
+      ],
+      "capec": [
+        "CAPEC-88"
+      ],
+      "cwe": [
+        "CWE-78"
+      ],
+      "owasp": [
+        "A03:2021 - Injection"
+      ],
+      "cve": [
+        "N/A"
+      ],
+      "confidence": "Highest",
+      "locations": [
+        "vulnerabilities/exec/source/low.php:5-18"
+      ],
+      "evidence": "```php\n$target = $_REQUEST[ 'ip' ]; // VULNERABLE\n// ...\nif( stristr( php_uname( 's' ), 'Windows NT' ) ) {\n    $cmd = shell_exec( 'ping  ' . $target ); // VULNERABLE\n}\nelse {\n    $cmd = shell_exec( 'ping  -c 4 ' . $target ); // VULNERABLE\n}\n$html .= \"<pre>{$cmd}</pre>\";\n```"
+    }
+  ],
+  "weakness_summary": [
+    {
+      "id": "WEAKNESS-1",
+      "severity": "Critical",
+      "cvss": "8.7",
+      "likelihood": "Very Likely",
+      "residual_severity": "Critical",
+      "confidence": "Highest",
+      "name": "SQL Injection in `/vulnerabilities/sqli/`"
+    },
+    {
+      "id": "WEAKNESS-2",
+      "severity": "Critical",
+      "cvss": "8.7",
+      "likelihood": "Very Likely",
+      "residual_severity": "Critical",
+      "confidence": "Highest",
+      "name": "OS Command Injection in `/vulnerabilities/exec/`"
+    }
+  ]
+}

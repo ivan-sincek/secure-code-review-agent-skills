@@ -4,7 +4,7 @@ description: Systematically identify and classify weaknesses using the CWE-699 S
 license: MIT
 metadata:
   author: Ivan Sincek
-  version: 1.0
+  version: 1.1
   url: https://github.com/ivan-sincek/secure-code-review-agent-skills
 ---
 
@@ -97,6 +97,8 @@ Output ONLY the following sections:
   "weakness_summary": []
 }
 ```
+
+See the example output in `examples/cwe_code_review.json`.
 
 Quality assurance:
 

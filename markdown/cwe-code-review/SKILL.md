@@ -4,7 +4,7 @@ description: Systematically identify and classify weaknesses using the CWE-699 S
 license: MIT
 metadata:
   author: Ivan Sincek
-  version: 1.0
+  version: 1.1
   url: https://github.com/ivan-sincek/secure-code-review-agent-skills
 ---
 
@@ -92,7 +92,11 @@ Output ONLY the following sections:
 
 - `# CWE Code Review`
 - `## Weakness Details`
+  - `### WEAKNESS-#: Name`
+    - `#### Evidence`
 - `## Weakness Summary`
+
+See the example output in `examples/cwe_code_review.md`.
 
 Quality assurance:
 
@@ -113,7 +117,6 @@ Quality assurance:
 
 ### Step 2 - Weakness Details
 
-- Add a heading in the format `WEAKNESS-#: Name` using the verbatim weakness name from the table.
 - Use ` / ` to separate: `CAPEC`, `CWE`, `OWASP`, `CVE`.
 - Use `<br>` to separate: `Attack Scenario`, `Existing Controls`, `Mitigations`, `Locations`.
 
