@@ -23,7 +23,7 @@
 | **Existing Controls** | Authentication required to access vulnerability modules.<br>At `medium` level, `mysqli_real_escape_string()` is applied to input.<br>At `impossible` level, PDO prepared statements with bound parameters are used. |
 | **Residual Severity** | Critical |
 | **Mitigations** | Use parameterized queries (prepared statements) with bound parameters for all database interactions.<br>Implement least-privilege database accounts that cannot access `information_schema` or perform administrative operations.<br>Deploy a Web Application Firewall (WAF) with SQL injection detection rules.<br>Remove verbose database error messages from HTTP responses. |
-| **CAPEC** | CAPEC-66 |
+| **CAPEC** | CAPEC-66 / CAPEC-7 |
 | **CWE** | CWE-89 |
 | **OWASP** | A03:2021 - Injection |
 | **CVE** | N/A |

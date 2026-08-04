@@ -40,7 +40,8 @@
         "Remove verbose database error messages from HTTP responses."
       ],
       "capec": [
-        "CAPEC-66"
+        "CAPEC-66",
+        "CAPEC-7"
       ],
       "cwe": [
         "CWE-89"
